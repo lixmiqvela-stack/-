@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>团队关系梳理 · 接触史记录</title>
+<style>
+  :root{
+    --navy:#1F3864; --blue:#2E5496; --teal:#2C7A7B; --bg:#F4F6FB;
+    --card:#FFFFFF; --line:#E2E8F0; --txt:#1A202C; --mut:#718096;
+    --green:#2F855A; --amber:#B7791F; --red:#C53030; --accent:#2C7A7B;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px; line-height:1.5;}
+  .wrap{max-width:760px; margin:0 auto; padding:0 12px 90px;}
+  header{position:sticky; top:0; z-index:20; background:var(--navy); color:#fff;
+    padding:12px 14px; display:flex; align-items:center; justify-content:space-between;}
+  header h1{font-size:16px; margin:0; font-weight:600;}
+  .sync-dot{font-size:12px; display:flex; align-items:center; gap:5px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:#A0AEC0;}
+  .dot.on{background:#48BB78;} .dot.err{background:#F56565;} .dot.busy{background:#ECC94B;}
+  nav{position:fixed; bottom:0; left:0; right:0; z-index:20; display:flex;
+    background:#fff; border-top:1px solid var(--line); max-width:760px; margin:0 auto;}
+  nav button{flex:1; border:none; background:none; padding:10px 4px 12px; font-size:12px;
+    color:var(--mut); display:flex; flex-direction:column; align-items:center; gap:3px;}
+  nav button.active{color:var(--navy); font-weight:600;}
+  nav .ic{font-size:20px; line-height:1;}
+  .view{display:none; padding-top:14px;}
+  .view.active{display:block;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:14px; margin-bottom:12px; box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .row{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn{background:var(--teal); color:#fff; border:none; border-radius:9px; padding:10px 14px;
+    font-size:14px; font-weight:600; cursor:pointer;}
+  .btn.ghost{background:#EDF2F7; color:var(--blue);}
+  .btn.sm{padding:6px 10px; font-size:13px;}
+  .btn.danger{background:#FED7D7; color:var(--red);}
+  .fab{position:fixed; right:16px; bottom:74px; z-index:25; width:54px; height:54px;
+    border-radius:50%; background:var(--teal); color:#fff; border:none; font-size:26px;
+    box-shadow:0 4px 12px rgba(44,122,123,.4);}
+  label{display:block; font-size:13px; color:var(--mut); margin:10px 0 4px;}
+  input,select,textarea{width:100%; border:1px solid var(--line); border-radius:8px;
+    padding:9px 10px; font-size:15px; font-family:inherit; background:#fff; color:var(--txt);}
+  textarea{resize:vertical; min-height:54px;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600;}
+  .pill.green{background:#C6F6D5; color:var(--green);}
+  .pill.amber{background:#FEEBC8; color:var(--amber);}
+  .pill.red{background:#FED7D7; color:var(--red);}
+  .pill.blue{background:#BEE3F8; color:var(--blue);}
+  .metrics{display:flex; gap:8px; margin-top:10px;}
+  .metric{flex:1; background:#F7FAFC; border:1px solid var(--line); border-radius:9px;
+    padding:8px; text-align:center;}
+  .metric .v{font-size:18px; font-weight:700;}
+  .metric .k{font-size:11px; color:var(--mut);}
+  .slider-row{margin:8px 0;}
+  .slider-row .top{display:flex; justify-content:space-between; font-size:13px; margin-bottom:2px;}
+  .slider-row .top b{color:var(--blue);}
+  input[type=range]{width:100%; accent-color:var(--teal); height:28px;}
+  .modal{position:fixed; inset:0; z-index:30; background:rgba(15,23,42,.5);
+    display:none; overflow:auto; padding:18px 12px 40px;}
+  .modal.show{display:block;}
+  .modal .box{background:#fff; border-radius:14px; padding:16px; max-width:560px; margin:0 auto;}
+  .modal h3{margin:0 0 4px; font-size:17px;}
+  .close{float:right; background:none; border:none; font-size:22px; color:var(--mut); cursor:pointer;}
+  .empty{text-align:center; color:var(--mut); padding:40px 10px; font-size:14px;}
+  .log-item{border-left:4px solid var(--teal); }
+  .log-item .meta{font-size:12px; color:var(--mut);}
+  .tag{font-size:11px; background:#EDF2F7; color:var(--blue); padding:1px 7px; border-radius:6px; margin-right:4px;}
+  .hint{font-size:12px; color:var(--mut); margin-top:6px;}
+  .seg{display:flex; gap:6px; flex-wrap:wrap; margin:6px 0;}
+  .seg span{padding:4px 10px; border:1px solid var(--line); border-radius:18px; font-size:13px; color:var(--mut);}
+  details{margin-top:8px;} summary{cursor:pointer; color:var(--blue); font-size:13px;}
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  th,td{border:1px solid var(--line); padding:5px 6px; text-align:left; vertical-align:top;}
+  th{background:#EDF2F7; color:var(--navy);}
+  .toast{position:fixed; left:50%; top:64px; transform:translateX(-50%); background:#1A202C;
+    color:#fff; padding:9px 16px; border-radius:20px; font-size:13px; z-index:50; opacity:0;
+    transition:opacity .25s; pointer-events:none;}
+  .toast.show{opacity:.95;}
+</style>
+</head>
+<body>
+<header>
+  <h1>团队关系梳理 · 接触史</h1>
+  <div class="sync-dot"><span class="dot" id="syncDot"></span><span id="syncTxt">本地</span></div>
+</header>
+
+<div class="wrap">
+  <!-- 人物卡 -->
+  <section class="view active" id="vPeople">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><b>团队人物卡</b> <span class="hint" id="pCount"></span></div>
+      </div>
+      <div class="hint">一人一行，参数按 0.00–1.00 打分（0.2 低 / 0.5 中 / 0.8 高态，0.05 微调）。点卡片可编辑/删除。</div>
+    </div>
+    <div id="peopleList"></div>
+  </section>
+
+  <!-- 接触史 -->
+  <section class="view" id="vLogs">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <b>日常接触史</b> <span class="hint" id="lCount"></span>
+      </div>
+      <div class="seg" id="logFilter"></div>
+    </div>
+    <div id="logList"></div>
+  </section>
+
+  <!-- 说明 -->
+  <section class="view" id="vHelp">
+    <div class="card">
+      <h3>这是啥</h3>
+      <p style="font-size:14px;">把 chat-skills 的「10 大领域跨学科引擎 + 参数加权算法」从恋爱社交语境迁移到<b>团队/工作人际</b>语境。核心：每次接触拆成可量化参数，按 0.05 阶梯微调，再代入战态公式研判。恋爱只是原版举的例子，<b>人际关系才是底色</b>。</p>
+    </div>
+    <div class="card">
+      <h3>10 大领域 → 团队语境</h3>
+      <table>
+        <tr><th>维度</th><th>团队语境解读</th><th>关键参数</th></tr>
+        <tr><td>进化心理</td><td>对方看重资源/稳定 还是 情绪/智识吸引</td><td>Sv / Rv</td></tr>
+        <tr><td>微观社会(拟剧)</td><td>前台人设 vs 对你开放后台真实想法</td><td>Pface / Backstage</td></tr>
+        <tr><td>认知心理</td><td>预期管理，落差如何制造</td><td>Exp / Act / Gap</td></tr>
+        <tr><td>行为经济</td><td>协作账本：谁投入更多，沉没成本多大</td><td>S_cost / Sp</td></tr>
+        <tr><td>精神分析</td><td>依恋/防御：焦虑型/回避型/安全型</td><td>Anx / Def</td></tr>
+        <tr><td>说服影响</td><td>服从阶梯：小请求顺水推舟到大协作</td><td>Cp</td></tr>
+        <tr><td>控制论</td><td>噪音过滤：只看真实行为，不听口头客套</td><td>Fback / Noise</td></tr>
+        <tr><td>唯物辩证</td><td>内在协作意愿 vs 外部阻力</td><td>Internal_D / External_R</td></tr>
+        <tr><td>博弈论</td><td>协作势能：谁掌握信息差与离场权</td><td>SPE / Ddepth / Rlatency</td></tr>
+        <tr><td>概率风险</td><td>每次推进前的收益与下行风险</td><td>P_succ / P_fail / EEV</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>战态公式（团队版）</h3>
+      <p style="font-size:13px;">
+      <b>IVI 意图真实度</b> = Sp·ln(Fback+1) / (你的投入·(Pface+0.05))<br>
+      &nbsp;&nbsp;＞1 真配合（口头推脱也别慌）；＜0.5 真不靠谱，止损。<br>
+      <b>SPE 协作势能</b> = (你的纵深/对方纵深)·(对方延迟/你的延迟)<br>
+      &nbsp;&nbsp;＜0.6 高危低位（你被拿捏，启动极简/留痕）；0.8–1.5 健康均势。<br>
+      <b>窗口指数 W</b>（EWS 简化代理）= Cp·0.4 + Fback·0.3 + Backstage·0.3<br>
+      &nbsp;&nbsp;＞0.6 可推进：发起对齐/请托的良机；久不推进会归零。</p>
+      <p class="hint">综合研判：SPE＜0.6 或 IVI＜0.5 → 止损/重建（红）；W＞0.6 且 IVI＞0.8 → 可推进（绿）；其余 → 维持/拉扯（黄）。</p>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section class="view" id="vSet">
+    <div class="card">
+      <h3>云同步（自动）</h3>
+      <p class="hint">用你自己的 <b>GitHub Gist</b> 做私有云存储，Mac 存完手机自动拉到。token 仅存你本机浏览器，不写进代码。建议用「仅 gist 权限」的细粒度 token。</p>
+      <label>GitHub Token（细粒度，gist 权限）</label>
+      <input id="setToken" type="password" placeholder="ghp_... 或 github_pat_..." autocomplete="off">
+      <label>Gist ID（新建留空会自动建一个私有 gist）</label>
+      <input id="setGist" placeholder="留空=首次自动创建" autocomplete="off">
+      <div class="row" style="margin-top:10px;">
+        <button class="btn sm" id="btnConnect">连接 / 自动同步</button>
+        <button class="btn ghost sm" id="btnDisconnect">断开</button>
+      </div>
+      <div class="hint" id="syncMsg"></div>
+    </div>
+    <div class="card">
+      <h3>数据</h3>
+      <div class="row">
+        <button class="btn ghost sm" id="btnExport">导出 JSON</button>
+        <button class="btn ghost sm" id="btnImport">导入 JSON</button>
+        <button class="btn danger sm" id="btnClear">清空全部</button>
+      </div>
+      <input id="fileInput" type="file" accept="application/json" style="display:none;">
+      <p class="hint">导出/导入用于换设备或备份。云同步开启后通常无需手动搬。</p>
+    </div>
+    <div class="card">
+      <h3>用法</h3>
+      <p class="hint" style="line-height:1.7;">
+      1. 【人物卡】每深交一位建一行，滑杆打分。<br>
+      2. 【接触史】每次实质接触（会议/群聊/私聊/线下）记一行，回写参数快照。<br>
+      3. 每周用 IVI/SPE/W 给重点人物研判，更新阶段与后续动作。<br>
+      4. 纯前端、零外部依赖，离线也能用；参数基于真实行为，严禁脑补。</p>
+    </div>
+  </section>
+</div>
+
+<button class="fab" id="fab">+</button>
+
+<!-- 人物编辑弹窗 -->
+<div class="modal" id="mPerson">
+  <div class="box">
+    <button class="close" data-close="mPerson">×</button>
+    <h3 id="mPTitle">新增人物</h3>
+    <label>姓名/代号</label><input id="pName">
+    <label>角色/职能</label><input id="pRole">
+    <div class="row">
+      <div style="flex:1"><label>关系定位</label><select id="pRel">
+        <option>上级</option><option>平级</option><option>下属</option><option>协作方</option><option>跨团队</option><option>外部</option>
+      </select></div>
+      <div style="flex:1"><label>当前阶段</label><select id="pStage">
+        <option>初识</option><option>建立信任</option><option>深度协作</option><option>表面客气</option><option>疏远</option><option>对立</option>
+      </select></div>
+    </div>
+    <details open><summary>对方参数（0–1）</summary>
+      <div id="pThem"></div>
+    </details>
+    <details open><summary>你方参数（0–1，用于算 SPE/IVI）</summary>
+      <div id="pMe"></div>
+    </details>
+    <label>关键信号 / 观察</label><textarea id="pNote" placeholder="例：会议常最后定调；私下愿吐槽流程问题"></textarea>
+    <label>备注</label><input id="pMemo">
+    <div class="metrics" id="pPreview"></div>
+    <div class="row" style="margin-top:12px; justify-content:space-between;">
+      <button class="btn danger sm" id="pDel" style="display:none;">删除</button>
+      <div><button class="btn ghost sm" data-close="mPerson">取消</button>
+      <button class="btn sm" id="pSave">保存</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 接触编辑弹窗 -->
+<div class="modal" id="mLog">
+  <div class="box">
+    <button class="close" data-close="mLog">×</button>
+    <h3 id="mLTitle">新增接触记录</h3>
+    <label>日期</label><input id="lDate" type="date">
+    <div class="row">
+      <div style="flex:1"><label>对象</label><select id="lWho"></select></div>
+      <div style="flex:1"><label>场景/渠道</label><select id="lScene">
+        <option>会议</option><option>群聊</option><option>私聊</option><option>邮件</option><option>线下</option><option>电话</option>
+      </select></div>
+    </div>
+    <label>时长/频率</label><input id="lDur">
+    <label>信号提取（谁主动/字数/时间差/情绪）</label><textarea id="lSignal"></textarea>
+    <label>话题</label><input id="lTopic">
+    <label>参数快照（SPE/Fback/Cp…）</label><input id="lSnap">
+    <label>关键事件 / 对话</label><textarea id="lEvent"></textarea>
+    <label>复盘研判（意图/势能/窗口）</label><textarea id="lReview"></textarea>
+    <label>后续动作</label><textarea id="lNext"></textarea>
+    <label>证据 / 留存</label><input id="lProof">
+    <div class="row" style="margin-top:12px; justify-content:space-between;">
+      <button class="btn danger sm" id="lDel" style="display:none;">删除</button>
+      <div><button class="btn ghost sm" data-close="mLog">取消</button>
+      <button class="btn sm" id="lSave">保存</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<nav>
+  <button data-v="vPeople" class="active"><span class="ic">👤</span>人物卡</button>
+  <button data-v="vLogs"><span class="ic">📒</span>接触史</button>
+  <button data-v="vHelp"><span class="ic">📖</span>说明</button>
+  <button data-v="vSet"><span class="ic">⚙️</span>设置</button>
+</nav>
+
+<script>
+"use strict";
+const STORE="team_rel_v1";
+const THEME_PARAMS=[["Sp","投入成本"],["Fback","反馈增益"],["Pface","面子阻力"],["Backstage","后台暴露"],
+  ["Ddepth","战略纵深(对方)"],["Rlatency","响应延迟(对方)"],["Cp","配合阶梯"],["Ve","情绪效价"]];
+const ME_PARAMS=[["meInv","你的投入"],["meDepth","你的纵深"],["meLat","你的延迟"]];
+
+let state={people:[],logs:[],settings:{token:"",gist:"",syncOn:false}};
+let editPid=null, editLid=null;
+
+/* ---------- storage ---------- */
+function load(){try{const s=JSON.parse(localStorage.getItem(STORE));if(s)state=Object.assign(state,s);}catch(e){}}
+function saveLocal(){localStorage.setItem(STORE,JSON.stringify(state));}
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+const persist=debounce(()=>{saveLocal();if(state.settings.syncOn)pushCloud();},400);
+
+/* ---------- compute ---------- */
+function compute(p){
+  const g=(k)=> (p[k]??0.5);
+  const IVI= g("Sp")*Math.log(g("Fback")+1) / (Math.max(g("meInv"),0.05)*(g("Pface")+0.05));
+  const SPE= (Math.max(g("meDepth"),0.05)/(g("Ddepth")+0.05)) * (g("Rlatency")/Math.max(g("meLat"),0.05));
+  const W= g("Cp")*0.4 + g("Fback")*0.3 + g("Backstage")*0.3;
+  let verdict,cls;
+  if(SPE<0.6||IVI<0.5){verdict="止损/重建";cls="red";}
+  else if(W>0.6&&IVI>0.8){verdict="可推进";cls="green";}
+  else {verdict="维持/拉扯";cls="amber";}
+  return {IVI,SPE,W,verdict,cls};
+}
+const pill=(v,thr,hi,lo)=> v>=thr?`<span class="pill green">${hi}</span>`:(v<=lo?`<span class="pill red">${lo}</span>`:`<span class="pill blue">中</span>`);
+
+/* ---------- render: people ---------- */
+function renderPeople(){
+  const box=document.getElementById("peopleList");
+  document.getElementById("pCount").textContent=`共 ${state.people.length} 人`;
+  if(!state.people.length){box.innerHTML=`<div class="empty">还没有人物，点右下角 + 新建一张人物卡</div>`;return;}
+  box.innerHTML=state.people.map(p=>{
+    const c=compute(p);
+    return `<div class="card" data-pid="${p.id}" onclick="openPerson('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><b>${esc(p.name)}</b> <span class="tag">${esc(p.rel||'')}</span><span class="tag">${esc(p.stage||'')}</span></div>
+        <span class="pill ${c.cls}">${c.verdict}</span>
+      </div>
+      <div class="hint">${esc(p.role||'')} ${esc(p.note?('· '+p.note):'')}</div>
+      <div class="metrics">
+        <div class="metric"><div class="v">${c.IVI.toFixed(2)}</div><div class="k">IVI 意图</div></div>
+        <div class="metric"><div class="v">${c.SPE.toFixed(2)}</div><div class="k">SPE 势能</div></div>
+        <div class="metric"><div class="v">${c.W.toFixed(2)}</div><div class="k">窗口 W</div></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+/* ---------- render: logs ---------- */
+function renderLogs(){
+  const box=document.getElementById("logList");
+  document.getElementById("lCount").textContent=`共 ${state.logs.length} 条`;
+  const f=document.getElementById("logFilter");
+  const names=["全部",...state.people.map(p=>p.name)];
+  f.innerHTML=names.map((n,i)=>`<span data-f="${i===0?'':n}" style="${i===logF?'background:var(--teal);color:#fff;':''}">${esc(n)}</span>`).join("");
+  let logs=[...state.logs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(logF) logs=logs.filter(l=>l.who===logF);
+  if(!logs.length){box.innerHTML=`<div class="empty">还没有接触记录</div>`;return;}
+  box.innerHTML=logs.map(l=>`
+    <div class="card log-item" data-lid="${l.id}" onclick="openLog('${l.id}')">
+      <div class="meta">${esc(l.date||'')} · <b>${esc(l.who||'')}</b> · ${esc(l.scene||'')} ${esc(l.dur?'· '+l.dur:'')}</div>
+      <div style="margin:4px 0;">${esc(l.signal||l.topic||'')}</div>
+      <div class="meta">${esc(l.review||'')}</div>
+    </div>`).join("");
+}
+let logF="";
+/* ---------- render: settings ---------- */
+function renderSettings(){
+  document.getElementById("setToken").value=state.settings.token||"";
+  document.getElementById("setGist").value=state.settings.gist||"";
+  setSyncUI();
+}
+function setSyncUI(){
+  const d=document.getElementById("syncDot"),t=document.getElementById("syncTxt");
+  d.className="dot"+(state.settings.syncOn?" on":"");
+  t.textContent=state.settings.syncOn?"已同步":"本地";
+}
+
+/* ---------- cloud (GitHub Gist) ---------- */
+const GH="https://api.github.com";
+async function pushCloud(){
+  if(!state.settings.syncOn||!state.settings.token)return;
+  const d=document.getElementById("syncDot");d.className="dot busy";
+  const body=JSON.stringify({people:state.people,logs:state.logs});
+  try{
+    let url=GH+"/gists",method="POST",payload={public:false,files:{"team_rel.json":{content:body}}};
+    if(state.settings.gist){url=GH+"/gists/"+state.settings.gist;method="PATCH";}
+    const r=await fetch(url,{method,headers:{"Authorization":"token "+state.settings.token,"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const j=await r.json();
+    if(!state.settings.gist){state.settings.gist=j.id;saveLocal();}
+    d.className="dot on";document.getElementById("syncTxt").textContent="已同步";
+    msg("已同步到云端 ✓",false);
+  }catch(e){d.className="dot err";msg("同步失败："+e.message,true);}
+}
+async function pullCloud(){
+  if(!state.settings.syncOn||!state.settings.token||!state.settings.gist)return;
+  const d=document.getElementById("syncDot");d.className="dot busy";
+  try{
+    const r=await fetch(GH+"/gists/"+state.settings.gist,{headers:{"Authorization":"token "+state.settings.token}});
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    const j=await r.json();const f=j.files&&j.files["team_rel.json"];
+    if(f&&f.content){const d2=JSON.parse(f.content);
+      if(d2.people)state.people=d2.people; if(d2.logs)state.logs=d2.logs; saveLocal(); renderAll();}
+    d.className="dot on";document.getElementById("syncTxt").textContent="已同步";msg("已从云端拉取 ✓",false);
+  }catch(e){d.className="dot err";msg("拉取失败："+e.message,true);}
+}
+function msg(t,err){const m=document.getElementById("syncMsg");m.textContent=t;m.style.color=err?"var(--red)":"var(--green)";}
+
+/* ---------- modal: person ---------- */
+function slider(id,label,val){
+  return `<div class="slider-row"><div class="top"><span>${label}</span><b id="sv_${id}">${(val??0.5).toFixed(2)}</b></div>
+    <input type="range" min="0" max="1" step="0.05" value="${val??0.5}" data-k="${id}" oninput="document.getElementById('sv_'+this.dataset.k).textContent=(+this.value).toFixed(2)"></div>`;
+}
+function openPerson(id){
+  editPid=id; const p=id?state.people.find(x=>x.id===id):{};
+  document.getElementById("mPTitle").textContent=id?"编辑人物":"新增人物";
+  document.getElementById("pName").value=p.name||"";
+  document.getElementById("pRole").value=p.role||"";
+  document.getElementById("pRel").value=p.rel||"上级";
+  document.getElementById("pStage").value=p.stage||"初识";
+  document.getElementById("pNote").value=p.note||"";
+  document.getElementById("pMemo").value=p.memo||"";
+  document.getElementById("pThem").innerHTML=THEME_PARAMS.map(([k,l])=>slider(k,l,p[k])).join("");
+  document.getElementById("pMe").innerHTML=ME_PARAMS.map(([k,l])=>slider(k,l,p[k])).join("");
+  document.getElementById("pDel").style.display=id?"inline-block":"none";
+  previewPerson();
+  show("mPerson");
+}
+function previewPerson(){
+  const dummy={};
+  THEME_PARAMS.concat(ME_PARAMS).forEach(([k])=>{const el=document.querySelector(`#pThem input[data-k="${k}"],#pMe input[data-k="${k}"]`);dummy[k]=el?+el.value:0.5;});
+  const c=compute(dummy);
+  document.getElementById("pPreview").innerHTML=
+    `<div class="metric"><div class="v">${c.IVI.toFixed(2)}</div><div class="k">IVI</div></div>
+     <div class="metric"><div class="v">${c.SPE.toFixed(2)}</div><div class="k">SPE</div></div>
+     <div class="metric"><div class="v">${c.W.toFixed(2)}</div><div class="k">W</div></div>`;
+}
+function savePerson(){
+  const get=(id)=>document.getElementById(id).value;
+  const p={id:editPid||("p"+Date.now()),name:get("pName"),role:get("pRole"),rel:get("pRel"),
+    stage:get("pStage"),note:get("pNote"),memo:get("pMemo")};
+  THEME_PARAMS.concat(ME_PARAMS).forEach(([k])=>{const el=document.querySelector(`#pThem input[data-k="${k}"],#pMe input[data-k="${k}"]`);if(el)p[k]=+el.value;});
+  if(!p.name.trim()){toast("填个名字吧");return;}
+  const i=state.people.findIndex(x=>x.id===p.id);
+  if(i>=0)state.people[i]=p;else state.people.push(p);
+  hide("mPerson");renderAll();persist();toast("已保存");
+}
+function delPerson(){
+  if(!editPid)return;
+  if(!confirm("删除这张人物卡？相关接触史保留。"))return;
+  state.people=state.people.filter(x=>x.id!==editPid);
+  hide("mPerson");renderAll();persist();toast("已删除");
+}
+/* ---------- modal: log ---------- */
+function openLog(id){
+  editLid=id; const l=id?state.logs.find(x=>x.id===id):{};
+  document.getElementById("mLTitle").textContent=id?"编辑接触记录":"新增接触记录";
+  document.getElementById("lDate").value=l.date||new Date().toISOString().slice(0,10);
+  document.getElementById("lDur").value=l.dur||"";
+  document.getElementById("lSignal").value=l.signal||"";
+  document.getElementById("lTopic").value=l.topic||"";
+  document.getElementById("lSnap").value=l.snap||"";
+  document.getElementById("lEvent").value=l.event||"";
+  document.getElementById("lReview").value=l.review||"";
+  document.getElementById("lNext").value=l.next||"";
+  document.getElementById("lProof").value=l.proof||"";
+  document.getElementById("lScene").value=l.scene||"会议";
+  const sel=document.getElementById("lWho");
+  sel.innerHTML=state.people.map(p=>`<option ${l.who===p.name?'selected':''}>${esc(p.name)}</option>`).join("")||'<option>先建人物卡</option>';
+  document.getElementById("lDel").style.display=id?"inline-block":"none";
+  show("mLog");
+}
+function saveLog(){
+  const get=(id)=>document.getElementById(id).value;
+  if(!state.people.length){toast("先去建个人物卡");return;}
+  const l={id:editLid||("l"+Date.now()),date:get("lDate"),who:get("lWho"),scene:get("lScene"),
+    dur:get("lDur"),signal:get("lSignal"),topic:get("lTopic"),snap:get("lSnap"),
+    event:get("lEvent"),review:get("lReview"),next:get("lNext"),proof:get("lProof")};
+  const i=state.logs.findIndex(x=>x.id===l.id);
+  if(i>=0)state.logs[i]=l;else state.logs.push(l);
+  hide("mLog");renderAll();persist();toast("已保存");
+}
+function delLog(){
+  if(!editLid)return;if(!confirm("删除这条记录？"))return;
+  state.logs=state.logs.filter(x=>x.id!==editLid);hide("mLog");renderAll();persist();toast("已删除");
+}
+
+/* ---------- helpers ---------- */
+function show(id){document.getElementById(id).classList.add("show");}
+function hide(id){document.getElementById(id).classList.remove("show");}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1600);}
+function renderAll(){renderPeople();renderLogs();}
+
+/* ---------- wire up ---------- */
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+  document.getElementById(b.dataset.v).classList.add("active");b.classList.add("active");
+});
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>hide(b.dataset.close));
+document.getElementById("fab").onclick=()=>{const v=document.querySelector(".view.active").id;
+  if(v==="vPeople")openPerson(null);else if(v==="vLogs")openLog(null);};
+document.getElementById("pSave").onclick=savePerson;
+document.getElementById("pDel").onclick=delPerson;
+document.getElementById("lSave").onclick=saveLog;
+document.getElementById("lDel").onclick=delLog;
+document.getElementById("pThem").addEventListener("input",previewPerson);
+document.getElementById("pMe").addEventListener("input",previewPerson);
+document.getElementById("logFilter").addEventListener("click",e=>{if(e.target.dataset.f!==undefined){logF=e.target.dataset.f;renderLogs();}});
+
+document.getElementById("btnConnect").onclick=async()=>{
+  state.settings.token=document.getElementById("setToken").value.trim();
+  state.settings.gist=document.getElementById("setGist").value.trim();
+  if(!state.settings.token){msg("先填 GitHub Token",true);return;}
+  state.settings.syncOn=true;saveLocal();setSyncUI();
+  if(!state.settings.gist){await pushCloud();}else{await pullCloud();}
+};
+document.getElementById("btnDisconnect").onclick=()=>{state.settings.syncOn=false;saveLocal();setSyncUI();msg("已断开",false);};
+document.getElementById("btnExport").onclick=()=>{
+  const blob=new Blob([JSON.stringify({people:state.people,logs:state.logs},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="团队关系备份.json";a.click();toast("已导出");
+};
+document.getElementById("btnImport").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(d.people)state.people=d.people;if(d.logs)state.logs=d.logs;saveLocal();renderAll();persist();toast("已导入");}
+    catch(err){toast("文件格式不对");}};r.readAsText(f);};
+document.getElementById("btnClear").onclick=()=>{if(!confirm("清空全部人物与接触史？不可恢复！"))return;
+  state.people=[];state.logs=[];saveLocal();renderAll();persist();toast("已清空");};
+
+/* ---------- init ---------- */
+load();renderSettings();renderAll();
+if(state.settings.syncOn&&state.settings.gist) pullCloud();
+</script>
+</body>
+</html>
